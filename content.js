@@ -24,6 +24,8 @@ function captureImage() {
 
                 // Log the captured image data (for demonstration purposes)
                 console.log(imgData);
+                // upload(imgData);
+
 
                 // Stop the stream
                 stream.getTracks().forEach(track => track.stop());
@@ -42,3 +44,33 @@ function captureImage() {
             }
         });
 }
+
+
+
+
+
+// function upload(imageData) {
+//     const cloudName = 'your_cloud_name'; // Replace with your Cloudinary cloud name
+//     const uploadPreset = 'your_upload_preset'; // Replace with your upload preset
+
+//     // Remove the data URL prefix to get just the base64-encoded string
+//     const base64Image = imageData.split(',')[1];
+
+//     // Create a form data object
+//     const formData = new FormData();
+//     formData.append('file', `data:image/png;base64,${base64Image}`);
+//     formData.append('upload_preset', uploadPreset);
+
+//     // Make the request to Cloudinary
+//     fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+//         method: 'POST',
+//         body: formData
+//     })
+//         .then(response => response.json())
+//         .then(data => {
+//             console.log('Upload successful:', data);
+//         })
+//         .catch(error => {
+//             console.error('Error uploading image:', error);
+//         });
+// }
