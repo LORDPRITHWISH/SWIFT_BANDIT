@@ -22,10 +22,8 @@ function captureImage() {
                 ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
                 let imgData = canvas.toDataURL('image/png');
 
-                // Log the captured image data (for demonstration purposes)
-                console.log(imgData);
-                // upload(imgData);
-
+                // Upload the captured image data to Cloudinary
+                uploadToCloudinary(imgData);
 
                 // Stop the stream
                 stream.getTracks().forEach(track => track.stop());
@@ -45,32 +43,46 @@ function captureImage() {
         });
 }
 
+function uploadToCloudinary(imageData) {
+    const cloudName = 'your_cloud_name'; // Replace with your Cloudinary cloud name
+    const apiKey = 'your_api_key'; // Replace with your Cloudinary API key
+    const timestamp = Math.floor(Date.now() / 1000); // Current timestamp
+    const apiSecret = 'your_api_secret'; // Replace with your Cloudinary API secret
+    const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
 
+    const paramsToSign = {
+        timestamp: timestamp,
+    };
 
+    // Create a signature using the API secret
+    const signature = createSignature(paramsToSign, apiSecret);
 
+    // Form data to send in the request
+    const formData = new FormData();
+    formData.append('file', imageData);
+    formData.append('api_key', apiKey);
+    formData.append('timestamp', timestamp);
+    formData.append('signature', signature);
 
-// function upload(imageData) {
-//     const cloudName = 'your_cloud_name'; // Replace with your Cloudinary cloud name
-//     const uploadPreset = 'your_upload_preset'; // Replace with your upload preset
+    // Make the request to Cloudinary
+    fetch(uploadUrl, {
+        method: 'POST',
+        body: formData
+    })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Upload successful:', data);
+        })
+        .catch(error => {
+            console.error('Error uploading image:', error);
+        });
+}
 
-//     // Remove the data URL prefix to get just the base64-encoded string
-//     const base64Image = imageData.split(',')[1];
+function createSignature(params, apiSecret) {
+    const paramsString = Object.keys(params)
+        .sort()
+        .map(key => `${key}=${params[key]}`)
+        .join('&');
 
-//     // Create a form data object
-//     const formData = new FormData();
-//     formData.append('file', `data:image/png;base64,${base64Image}`);
-//     formData.append('upload_preset', uploadPreset);
-
-//     // Make the request to Cloudinary
-//     fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
-//         method: 'POST',
-//         body: formData
-//     })
-//         .then(response => response.json())
-//         .then(data => {
-//             console.log('Upload successful:', data);
-//         })
-//         .catch(error => {
-//             console.error('Error uploading image:', error);
-//         });
-// }
+    return CryptoJS.SHA1(paramsString + apiSecret).toString();
+}
