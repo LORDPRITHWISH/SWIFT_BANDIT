@@ -45,27 +45,15 @@ function captureImage() {
 
 function uploadToCloudinary(imageData) {
     const cloudName = 'your_cloud_name'; // Replace with your Cloudinary cloud name
-    const apiKey = 'your_api_key'; // Replace with your Cloudinary API key
-    const timestamp = Math.floor(Date.now() / 1000); // Current timestamp
-    const apiSecret = 'your_api_secret'; // Replace with your Cloudinary API secret
-    const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
+    const uploadPreset = 'your_upload_preset'; // Replace with your upload preset
 
-    const paramsToSign = {
-        timestamp: timestamp,
-    };
-
-    // Create a signature using the API secret
-    const signature = createSignature(paramsToSign, apiSecret);
-
-    // Form data to send in the request
+    // Create a form data object
     const formData = new FormData();
     formData.append('file', imageData);
-    formData.append('api_key', apiKey);
-    formData.append('timestamp', timestamp);
-    formData.append('signature', signature);
+    formData.append('upload_preset', uploadPreset);
 
     // Make the request to Cloudinary
-    fetch(uploadUrl, {
+    fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
         method: 'POST',
         body: formData
     })
@@ -76,13 +64,4 @@ function uploadToCloudinary(imageData) {
         .catch(error => {
             console.error('Error uploading image:', error);
         });
-}
-
-function createSignature(params, apiSecret) {
-    const paramsString = Object.keys(params)
-        .sort()
-        .map(key => `${key}=${params[key]}`)
-        .join('&');
-
-    return CryptoJS.SHA1(paramsString + apiSecret).toString();
 }
